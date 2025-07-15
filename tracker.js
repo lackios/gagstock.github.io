@@ -1,44 +1,21 @@
-const categories = {
-  Seeds: "seed",
-  Gear: "gear",
-  Eggs: "egg",
-  Cosmetics: "cosmetic"
-};
-
-const loadingScreen = document.getElementById('loading-screen');
-let firstLoad = true;
-
-const status = {
-  lastUpdatedEl: document.getElementById('last-updated'),
-  nextUpdateEl: document.getElementById('next-update'),
-  totalItemsEl: document.getElementById('total-items'),
-  totalStockEl: document.getElementById('total-stock'),
-  lowStockEl: document.getElementById('low-stock'),
-};
-
 let countdownInterval = null;
 let refreshTimeout = null;
 
 function formatTime(date) {
   return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: true });
 }
-
-function msUntilNext5MinuteMark() {
-  const now = new Date();
-  const ms = now.getTime();
-  const next = new Date(now);
-
-  const minutes = now.getMinutes();
-  const nextMultiple = Math.ceil(minutes / 5) * 5;
-  next.setMinutes(nextMultiple);
-  next.setSeconds(0);
-  next.setMilliseconds(0);
-
-  if (next <= now) {
-    next.setMinutes(next.getMinutes() + 5);
-  }
-
-  return next.getTime() - ms;
+function parseCountdownString(str) {
+  if (!str) return 0;
+  let total = 0;
+  const parts = str.split(' ');
+  parts.forEach(part => {
+    if (part.endsWith('m')) {
+      total += parseInt(part) * 60;
+    } else if (part.endsWith('s')) {
+      total += parseInt(part);
+    }
+  });
+  return total;
 }
 
 async function fetchData() {
@@ -46,7 +23,6 @@ async function fetchData() {
     loadingScreen.classList.remove('hidden');
   }
 
-  // Use your preferred CORS proxy or a working one
   const corsProxy = "https://corsproxy.io/?";
   const apiUrl = corsProxy + encodeURIComponent('https://gagstock.gleeze.com/grow-a-garden');
 
@@ -84,6 +60,7 @@ function updateStock(data) {
       ul.appendChild(li);
     });
 
+    // Show countdown from API
     const countdownStr = categoryData.countdown;
     const timerP = document.querySelector(`#${displayName}-timer`);
     if (timerP) {
@@ -98,19 +75,29 @@ function updateStock(data) {
   return hasItems;
 }
 
-function updateStatusTexts(msUntilNextUpdate) {
+// Format seconds into "Xm Ys" or "Xs"
+function formatSeconds(seconds) {
+  if (seconds <= 0) return "0s";
+  const m = Math.floor(seconds / 60);
+  const s = seconds % 60;
+  if (m > 0) {
+    return s > 0 ? `${m}m ${s}s` : `${m}m`;
+  }
+  return `${s}s`;
+}
+
+function updateStatusTexts(secondsLeft) {
   const now = new Date();
   status.lastUpdatedEl.textContent = `🕐 Last Updated: ${formatTime(now)}`;
 
   if (countdownInterval) clearInterval(countdownInterval);
 
-  let secondsLeft = Math.round(msUntilNextUpdate / 1000);
-  status.nextUpdateEl.textContent = `🔄 Next update: ${secondsLeft}s`;
+  status.nextUpdateEl.textContent = `🔄 Next update: ${formatSeconds(secondsLeft)}`;
 
   countdownInterval = setInterval(() => {
     secondsLeft--;
     if (secondsLeft < 0) secondsLeft = 0;
-    status.nextUpdateEl.textContent = `🔄 Next update: ${secondsLeft}s`;
+    status.nextUpdateEl.textContent = `🔄 Next update: ${formatSeconds(secondsLeft)}`;
   }, 1000);
 }
 
@@ -127,12 +114,26 @@ async function refresh() {
       loadingScreen.querySelector('.loader').textContent = "No stock available right now.";
     }
 
-    const msToNextUpdate = msUntilNext5MinuteMark();
+    // Find shortest countdown in seconds from all categories
+    const countdownSecondsArray = Object.values(categories).map(key => {
+      const cat = data[key];
+      if (!cat || !cat.countdown) return null;
+      return parseCountdownString(cat.countdown);
+    }).filter(v => v !== null && v > 0);
 
-    updateStatusTexts(msToNextUpdate);
+    // Use shortest countdown + 1 second delay, or fallback to 5-minute mark logic
+    let nextUpdateSeconds;
+    if (countdownSecondsArray.length > 0) {
+      nextUpdateSeconds = Math.min(...countdownSecondsArray) + 1;
+    } else {
+      // fallback
+      nextUpdateSeconds = Math.ceil(msUntilNext5MinuteMark() / 1000);
+    }
+
+    updateStatusTexts(nextUpdateSeconds * 1);
 
     if (refreshTimeout) clearTimeout(refreshTimeout);
-    refreshTimeout = setTimeout(refresh, msToNextUpdate);
+    refreshTimeout = setTimeout(refresh, nextUpdateSeconds * 1000);
 
   } catch (error) {
     console.error(error);
@@ -149,7 +150,6 @@ async function refresh() {
 window.onload = () => {
   refresh();
 
-  // Dark mode toggle button logic
   const darkModeToggle = document.getElementById('dark-mode-toggle');
   if (localStorage.getItem('darkMode') === 'enabled') {
     document.body.classList.add('dark-mode');
@@ -167,7 +167,6 @@ window.onload = () => {
     }
   });
 
-  // Refresh button logic
   const refreshButton = document.getElementById('refresh-button');
   refreshButton.addEventListener('click', () => {
     loadingScreen.classList.remove('hidden');
