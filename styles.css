@@ -169,32 +169,11 @@ main {
   }
 }
 
-/* Dark Mode Button */
-#dark-mode-toggle {
-  position: fixed;
-  top: 15px;
-  right: 15px;
-  background: #5aa897;
-  border: none;
-  border-radius: 50%;
-  width: 40px;
-  height: 40px;
-  font-size: 20px;
-  color: white;
-  cursor: pointer;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.3);
-  transition: background-color 0.3s ease;
-  z-index: 10000;
-}
-#dark-mode-toggle:hover {
-  background: #3f7f6b;
-}
-
-/* Refresh Button */
+/* Shared button styles for dark mode toggle and refresh */
+#dark-mode-toggle,
 #refresh-button {
   position: fixed;
   top: 15px;
-  right: 65px; /* next to dark mode toggle */
   background: #5aa897;
   border: none;
   border-radius: 50%;
@@ -207,6 +186,17 @@ main {
   transition: background-color 0.3s ease;
   z-index: 10000;
 }
+
+/* Positions */
+#dark-mode-toggle {
+  right: 15px;
+}
+#refresh-button {
+  right: 65px; /* 40px width + 10px gap + 15px from right edge */
+}
+
+/* Hover effects */
+#dark-mode-toggle:hover,
 #refresh-button:hover {
   background: #3f7f6b;
 }
