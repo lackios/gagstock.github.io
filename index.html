@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Grow a Garden Stock Tracker</title>
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <header>
+    <h1>Grow a Garden Stock Tracker</h1>
+  </header>
+
+  <button id="dark-mode-toggle" aria-label="Toggle Dark Mode">🌙</button>
+  <button id="refresh-button" aria-label="Refresh Stock">🔄</button>
+
+  <main>
+    <section id="status-bar">
+      <span id="last-updated">🕐 Last Updated: --:--</span> | 
+      <span id="next-update">🔄 Next update: --s</span>
+    </section>
+
+    <section id="stats">
+      <div class="stat-box">
+        <h3 id="total-items">--</h3>
+        <p>Total Items</p>
+      </div>
+      <div class="stat-box">
+        <h3 id="total-stock">--</h3>
+        <p>Total Stock</p>
+      </div>
+      <div class="stat-box">
+        <h3 id="low-stock">--</h3>
+        <p>Low Stock</p>
+      </div>
+    </section>
+
+    <section id="stock">
+      <article class="category" id="Seeds">
+        <h2>Seeds</h2>
+        <ul></ul>
+        <p class="timer" id="Seeds-timer"></p>
+      </article>
+
+      <article class="category" id="Gear">
+        <h2>Gear</h2>
+        <ul></ul>
+        <p class="timer" id="Gear-timer"></p>
+      </article>
+
+      <article class="category" id="Eggs">
+        <h2>Eggs</h2>
+        <ul></ul>
+        <p class="timer" id="Eggs-timer"></p>
+      </article>
+
+      <article class="category" id="Cosmetics">
+        <h2>Cosmetics</h2>
+        <ul></ul>
+        <p class="timer" id="Cosmetics-timer"></p>
+      </article>
+    </section>
+  </main>
+
+  <footer>
+    <p>made by cen(lackios) follow me in roblox @stupiddev123</p>
+  </footer>
+
+  <div class="loading-screen" id="loading-screen">
+    <span class="loader">Loading Grow a Garden Stock...</span>
+  </div>
+
+  <script src="tracker.js"></script>
+</body>
+</html>
